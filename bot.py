@@ -64,8 +64,9 @@ async def discounts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             message += (
                 f"🛒 *{item['name']}*\n"
                 f"💰 Цена: {item['price']}\n"
-                f"📉 Старая цена: {item['old_price'] or 'Нет'}\n"
-                f"🔖 Скидка: {item['discount'] or 'Нет'}\n\n"
+                f"📉 Старая цена: {item['old_price']}\n"
+                f"🔖 Скидка: {item['discount']}\n"
+                f"🖼️ Изображение: {item['image']}\n\n"
             )
 
         await update.message.reply_text(message, parse_mode="Markdown")

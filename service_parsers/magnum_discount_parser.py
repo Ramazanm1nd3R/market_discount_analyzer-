@@ -1,48 +1,60 @@
-import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
+import os
 
 def parse_magnum_discounts(url):
     """
-    Парсер скидок с веб-страницы Magnum.
+    Парсер скидок с сайта Magnum с использованием Selenium.
     url: URL страницы со скидками.
     """
-    # Получаем HTML-код страницы
-    response = requests.get(url)
-    if response.status_code != 200:
-        raise Exception(f"Не удалось загрузить страницу: {url}")
+    # Настройка пути к ChromeDriver
+    chromedriver_path = os.path.join(os.path.dirname(__file__), "../chromedriver-win64/chromedriver.exe")
+    service = Service(chromedriver_path)
 
-    soup = BeautifulSoup(response.text, "html.parser")
-    discounts = []
+    # Настройка Selenium
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
 
-    # Ищем блоки товаров
-    products = soup.select(".product-block")  # Убедись, что CSS-селектор соответствует структуре сайта
-    for product in products:
-        try:
-            # Извлекаем название товара
-            name = product.select_one(".product-block__descr").text.strip()
+    driver = webdriver.Chrome(service=service, options=options)
 
-            # Извлекаем текущую цену
-            price = product.select_one(".product-block__price").text.strip()
+    try:
+        # Открываем страницу
+        driver.get(url)
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "product-block")))
 
-            # Извлекаем старую цену (если есть)
-            old_price = product.select_one(".product-block__old-price")
-            old_price = old_price.text.strip() if old_price else None
+        # Получаем HTML-код
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+        discounts = []
 
-            # Извлекаем скидку (если есть)
-            discount = product.select_one(".product-block__stock")
-            discount = discount.text.strip() if discount else None
+        # Ищем блоки товаров
+        products = soup.select(".product-block")
+        for product in products:
+            try:
+                name = product.select_one(".product-block__descr").text.strip()
+                price = product.select_one(".product-block__price").text.strip()
+                old_price = product.select_one(".product-block__old-price")
+                old_price = old_price.text.strip() if old_price else "Нет"
+                discount = product.select_one(".product-block__stock")
+                discount = discount.text.strip() if discount else "Нет"
+                image = product.select_one(".product-block__img img")
+                image = image["src"] if image and "src" in image.attrs else "Нет изображения"
 
-            # Извлекаем ссылку на изображение
-            image = product.select_one(".product-block__img img")["src"]
+                discounts.append({
+                    "name": name,
+                    "price": price,
+                    "old_price": old_price,
+                    "discount": discount,
+                    "image": image
+                })
+            except Exception as e:
+                print(f"Ошибка при обработке товара: {e}")
 
-            discounts.append({
-                "name": name,
-                "price": price,
-                "old_price": old_price,
-                "discount": discount,
-                "image": image
-            })
-        except Exception as e:
-            print(f"Ошибка при обработке товара: {e}")
-
-    return discounts
+        return discounts
+    finally:
+        driver.quit()
