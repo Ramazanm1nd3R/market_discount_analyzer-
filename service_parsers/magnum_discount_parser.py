@@ -17,9 +17,14 @@ def parse_magnum_discounts(url):
 
     # Настройка Selenium
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
+    options.add_argument("--headless")  # Безголовый режим
+    options.add_argument("--disable-gpu")  # Отключение GPU-ускорения
+    options.add_argument("--no-sandbox")  # Без песочницы
+    options.add_argument("--disable-dev-shm-usage")  # Ограничение использования общей памяти
+    options.add_argument("--disable-webgl")  # Отключение WebGL
+    options.add_argument("--use-gl=swiftshader")  # Использование программного рендеринга
+    options.add_argument("--disable-software-rasterizer")  # Отключение программного растеризатора
+    options.add_argument("--log-level=3")  # Сокращение логов
 
     driver = webdriver.Chrome(service=service, options=options)
 
@@ -28,7 +33,7 @@ def parse_magnum_discounts(url):
         driver.get(url)
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "product-block")))
 
-        # Получаем HTML-код
+        # Получаем HTML-код в оперативной памяти
         soup = BeautifulSoup(driver.page_source, "html.parser")
         discounts = []
 
@@ -36,25 +41,30 @@ def parse_magnum_discounts(url):
         products = soup.select(".product-block")
         for product in products:
             try:
-                name = product.select_one(".product-block__descr").text.strip()
-                price = product.select_one(".product-block__price").text.strip()
+                # Извлекаем полное название товара
+                name = product.select_one(".product-block__descr").get_text(strip=True)
+
+                # Извлекаем текущую цену
+                price = product.select_one(".product-block__price").get_text(strip=True)
+
+                # Извлекаем старую цену (если есть)
                 old_price = product.select_one(".product-block__old-price")
-                old_price = old_price.text.strip() if old_price else "Нет"
+                old_price = old_price.get_text(strip=True) if old_price else "Нет"
+
+                # Извлекаем скидку (если есть)
                 discount = product.select_one(".product-block__stock")
-                discount = discount.text.strip() if discount else "Нет"
-                image = product.select_one(".product-block__img img")
-                image = image["src"] if image and "src" in image.attrs else "Нет изображения"
+                discount = discount.get_text(strip=True) if discount else "Нет"
 
                 discounts.append({
-                    "name": name,
+                    "name": name,  # Полное название
                     "price": price,
                     "old_price": old_price,
-                    "discount": discount,
-                    "image": image
+                    "discount": discount
                 })
             except Exception as e:
                 print(f"Ошибка при обработке товара: {e}")
 
         return discounts
     finally:
+        # Завершаем работу WebDriver
         driver.quit()
