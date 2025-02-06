@@ -33,7 +33,7 @@ def parse_magnum_discounts(url):
         driver.get(url)
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "product-block")))
 
-        # Получаем HTML-код в оперативной памяти
+        # Получаем HTML-код
         soup = BeautifulSoup(driver.page_source, "html.parser")
         discounts = []
 
@@ -41,18 +41,28 @@ def parse_magnum_discounts(url):
         products = soup.select(".product-block")
         for product in products:
             try:
-                # Проверяем наличие каждого элемента перед извлечением
-                name_elem = product.select_one(".product-block__descr")
-                price_elem = product.select_one(".product-block__price")
-                old_price_elem = product.select_one(".product-block__old-price")
-                discount_elem = product.select_one(".product-block__stock")
+                # Попробуем извлечь название товара, используя более гибкий подход
+                name = None
+                for selector in [".product-block__descr", ".product-block__title", ".product-name"]:
+                    name_elem = product.select_one(selector)
+                    if name_elem:
+                        name = name_elem.get_text(strip=True)
+                        break
+                name = name if name else "Название отсутствует"
 
-                # Извлекаем данные, если элементы существуют
-                name = name_elem.get_text(strip=True) if name_elem else "Название отсутствует"
+                # Попробуем извлечь текущую цену, стараясь подстроиться под разные структуры
+                price_elem = product.select_one(".product-block__price")
                 price = price_elem.get_text(strip=True) if price_elem else "Цена отсутствует"
+
+                # Извлекаем старую цену (если она существует)
+                old_price_elem = product.select_one(".product-block__old-price")
                 old_price = old_price_elem.get_text(strip=True) if old_price_elem else "Нет"
+
+                # Извлекаем скидку, если она есть
+                discount_elem = product.select_one(".product-block__stock")
                 discount = discount_elem.get_text(strip=True) if discount_elem else "Нет"
 
+                # Формируем запись о товаре
                 discounts.append({
                     "name": name,
                     "price": price,
