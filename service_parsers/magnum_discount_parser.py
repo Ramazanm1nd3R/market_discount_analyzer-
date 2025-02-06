@@ -41,22 +41,20 @@ def parse_magnum_discounts(url):
         products = soup.select(".product-block")
         for product in products:
             try:
-                # Извлекаем полное название товара
-                name = product.select_one(".product-block__descr").get_text(strip=True)
+                # Проверяем наличие каждого элемента перед извлечением
+                name_elem = product.select_one(".product-block__descr")
+                price_elem = product.select_one(".product-block__price")
+                old_price_elem = product.select_one(".product-block__old-price")
+                discount_elem = product.select_one(".product-block__stock")
 
-                # Извлекаем текущую цену
-                price = product.select_one(".product-block__price").get_text(strip=True)
-
-                # Извлекаем старую цену (если есть)
-                old_price = product.select_one(".product-block__old-price")
-                old_price = old_price.get_text(strip=True) if old_price else "Нет"
-
-                # Извлекаем скидку (если есть)
-                discount = product.select_one(".product-block__stock")
-                discount = discount.get_text(strip=True) if discount else "Нет"
+                # Извлекаем данные, если элементы существуют
+                name = name_elem.get_text(strip=True) if name_elem else "Название отсутствует"
+                price = price_elem.get_text(strip=True) if price_elem else "Цена отсутствует"
+                old_price = old_price_elem.get_text(strip=True) if old_price_elem else "Нет"
+                discount = discount_elem.get_text(strip=True) if discount_elem else "Нет"
 
                 discounts.append({
-                    "name": name,  # Полное название
+                    "name": name,
                     "price": price,
                     "old_price": old_price,
                     "discount": discount
