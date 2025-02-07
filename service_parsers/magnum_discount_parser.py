@@ -41,16 +41,11 @@ def parse_magnum_discounts(url):
         products = soup.select(".product-block")
         for product in products:
             try:
-                # Попробуем извлечь название товара, используя более гибкий подход
-                name = None
-                for selector in [".product-block__descr", ".product-block__title", ".product-name"]:
-                    name_elem = product.select_one(selector)
-                    if name_elem:
-                        name = name_elem.get_text(strip=True)
-                        break
-                name = name if name else "Название отсутствует"
+                # Извлекаем полное название товара (включаем все элементы с .product-block__descr)
+                name_elements = product.select(".product-block__descr")
+                name = " ".join([el.get_text(strip=True) for el in name_elements]) if name_elements else "Название отсутствует"
 
-                # Попробуем извлечь текущую цену, стараясь подстроиться под разные структуры
+                # Извлекаем текущую цену
                 price_elem = product.select_one(".product-block__price")
                 price = price_elem.get_text(strip=True) if price_elem else "Цена отсутствует"
 
