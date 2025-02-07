@@ -1,6 +1,6 @@
 # 🛍️ Discount Hunter Bot
 
-Welcome to the **Discount Hunter Bot** project, your go-to Telegram assistant for finding the best deals and discounts at Magnum supermarkets in Kazakhstan! 🌟
+Welcome to the **Discount Hunter Bot** project, your go-to Telegram assistant for finding the best deals and discounts at supermarkets, marketplaces and etc in Kazakhstan! 🌟
 
 ## 🛠️ Project Description
 This bot uses **Selenium** 🕵️‍♂️ and **BeautifulSoup** 🍜 to scrape the latest discounts from Magnum's website and delivers them right to your Telegram chat. Whether you're hunting for deals on coffee ☕, pasta 🍝, or laundry detergent 🧺, this bot's got you covered!
