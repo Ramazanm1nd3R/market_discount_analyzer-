@@ -1,9 +1,10 @@
 import os
 import logging
 from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 from dotenv import load_dotenv
 from service_parsers.magnum_discount_parser import parse_magnum_discounts
+from scripts.filter_discounts import filter_discounts_by_threshold
 
 # Загрузка переменных окружения из .env
 load_dotenv()
@@ -18,29 +19,22 @@ logger = logging.getLogger(__name__)
 # URL страницы со скидками
 MAGNUM_URL = "https://magnum.kz/catalog?discountType=all&city=almaty"
 
-# Команды бота
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Обработка команды /start"""
-    user = update.effective_user
     await update.message.reply_text(
-        f"Привет, {user.first_name}! 👋\n"
+        f"Привет, {update.effective_user.first_name}! 👋\n"
         "Я помогу найти скидки, которые ты задашь. Напиши /help, чтобы узнать больше!"
     )
 
-
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Обработка команды /help"""
     commands = (
         "/start - Начать работу с ботом\n"
         "/help - Список доступных команд\n"
         "/info - Информация о боте\n"
-        "/discounts - Показать текущие скидки в файле"
+        "/discounts - Найти скидки с минимальным порогом"
     )
     await update.message.reply_text(f"Вот что я умею:\n\n{commands}")
 
-
 async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Обработка команды /info"""
     await update.message.reply_text(
         "Этот бот создан для поиска скидок в Казахстане! 🇰🇿\n"
         "Автор: Ramazanm1nd3R\n"
@@ -48,56 +42,50 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Вопросы и предложения: /help"
     )
 
-
-async def discounts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Обработка команды /discounts - сохранение и отправка скидок в файл"""
+async def handle_threshold_response(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
-        # Парсим данные о скидках
+        threshold = int(float(update.message.text.strip()))
         discount_data = parse_magnum_discounts(MAGNUM_URL)
-        if not discount_data:
-            await update.message.reply_text("Скидок не найдено. Попробуйте позже.")
+        filtered_discounts = filter_discounts_by_threshold(discount_data, threshold)
+
+        if not filtered_discounts:
+            await update.message.reply_text(f"Нет скидок больше или равных {threshold}%. Попробуйте позже.")
             return
 
-        # Создаем текстовый файл с информацией о скидках
-        file_path = "magnum_discounts.txt"
+        file_path = "filtered_discounts.txt"
         with open(file_path, "w", encoding="utf-8") as file:
-            for item in discount_data:
+            for item in filtered_discounts:
                 file.write(
                     f"Название: {item['name']}\n"
                     f"Цена: {item['price']}\n"
                     f"Старая цена: {item['old_price']}\n"
-                    f"Скидка: {item['discount']}\n\n"
+                    f"Скидка: {item['discount']}%\n\n"
                 )
 
-        # Отправляем файл пользователю
         with open(file_path, "rb") as file:
-            await context.bot.send_document(chat_id=update.effective_chat.id, document=file)
+            await update.message.reply_document(document=file)
 
-        # Удаляем файл после отправки
         os.remove(file_path)
-
-        # Уведомление об успешной отправке
-        logger.info("Файл со скидками успешно отправлен пользователю.")
+    except ValueError:
+        await update.message.reply_text("Пожалуйста, введите корректное число.")
     except Exception as e:
-        logger.error(f"Ошибка при получении скидок: {e}")
-        await update.message.reply_text("Произошла ошибка при получении скидок. Попробуйте позже.")
+        logger.error(f"Ошибка при обработке скидок: {e}")
+        await update.message.reply_text("Произошла ошибка при обработке запроса. Попробуйте позже.")
 
+async def discounts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text("Введите минимальный процент скидки (например, 20):")
 
 def main() -> None:
-    """Главная функция для запуска бота"""
-    # Создаем приложение
     application = Application.builder().token(BOT_TOKEN).build()
 
-    # Регистрация команд
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("info", info))
     application.add_handler(CommandHandler("discounts", discounts))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_threshold_response))
 
-    # Запуск бота
     logger.info("Бот запущен!")
     application.run_polling()
-
 
 if __name__ == "__main__":
     main()
