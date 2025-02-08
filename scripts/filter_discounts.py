@@ -18,14 +18,20 @@ def filter_discounts_by_threshold(discounts, threshold):
     filtered_discounts = []
     for item in discounts:
         try:
-            # Проверяем наличие и корректность поля скидки
-            if "discount" not in item or not item["discount"]:
-                logger.warning(f"Пропущен товар без скидки: {item.get('name', 'Без имени')}")
+            discount_text = item["discount"]
+            # Проверяем, содержит ли скидка числовые данные
+            if "Нет" in discount_text or "Цена отсутствует" in discount_text:
                 continue
-
-            discount_value = int(item["discount"].replace("%", "").replace("-", "").strip())
+            
+            # Извлекаем числовое значение скидки
+            discount_value = int(discount_text.replace("%", "").replace("-", "").strip())
             if discount_value >= threshold:
                 filtered_discounts.append(item)
-        except ValueError:
-            logger.warning(f"Не удалось обработать скидку для товара: {item.get('name', 'Без имени')}")
+        except (ValueError, KeyError) as e:
+            logger.warning(f"Некорректная запись для скидки товара: {item.get('name', 'Без названия')}, причина: {e}")
+    
+    # Логируем общее количество исключённых записей
+    if len(filtered_discounts) < len(discounts):
+        logger.info(f"Исключено {len(discounts) - len(filtered_discounts)} некорректных записей.")
+
     return filtered_discounts
