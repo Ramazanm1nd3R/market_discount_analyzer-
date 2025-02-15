@@ -1,29 +1,31 @@
 # 🛍️ Discount Hunter Bot
 
-Welcome to the **Discount Hunter Bot** project, your go-to Telegram assistant for finding the best deals and discounts at supermarkets, marketplaces and etc in Kazakhstan! 🌟
+Welcome to the **Discount Hunter Bot** project, your go-to Telegram assistant for finding the best deals and discounts at supermarkets and online stores in Kazakhstan! 🌟
 
 ## 🛠️ Project Description
-This bot uses **Selenium** 🕵️‍♂️ and **BeautifulSoup** 🍜 to scrape the latest discounts from Magnum's website and delivers them right to your Telegram chat. Whether you're hunting for deals on coffee ☕, pasta 🍝, or laundry detergent 🧺, this bot's got you covered!
+This bot uses **Selenium** 🕵️‍♂️ and **BeautifulSoup** 🍜 to scrape the latest discounts from **Magnum** and **Lamoda** and etc websites in future. 
 
 ## 🎯 Features
 - **Telegram Commands**
-  - `/start` – Welcomes you with open arms (and maybe a discount).
-  - `/help` – Explains everything you need to know.
-  - `/info` – Tells you about the bot and its creator.
-  - `/discounts` – Fetches the latest discounts and sends them in a handy file.
+  - `/start` – Greets you and shows the main menu.
+  - `/help` – Displays available commands and usage.
+  - `/info` – Provides information about the bot and its creator.
 
-- **Advanced Parsing**
-  - Handles dynamic web content using Selenium.
-  - Extracts detailed product information: name, current price, old price, and discount percentage.
-  - Flexible logic to adapt to changes in the Magnum website.
+- **Store Selection:**  
+  🛒 **Magnum:** Find discounts on groceries and household items.  
+  🛍️ **Lamoda:** Find deals on fashion items with options for Women, Men, or Kids.  
+
+- **Advanced Parsing:**  
+  - **Selenium** handles dynamic web content.  
+  - **BeautifulSoup** extracts detailed product information (name, price, old price, discount, sizes, ratings).  
+  - Separate logic for different stores, with error handling and filtering.  
 
 ## 💻 Installation
 Follow these steps to run the bot on your local machine:
 
-1. Clone this repository:
+1. **Clone this repository:**
    ```bash
    git clone https://github.com/Ramazanm1nd3R/market_discount_analyzer-
-   ```
 
 2. Navigate to the project directory:
    ```bash
@@ -54,23 +56,36 @@ Follow these steps to run the bot on your local machine:
    ```
 
 ## 🤖 How It Works
-1. The bot listens for your commands in Telegram.
-2. It scrapes data from the [Magnum website](https://magnum.kz/) using Selenium.
-3. It processes and extracts discounts with BeautifulSoup.
-4. Sends the discount data as a handy `.txt` file to your chat.
+1. Start: The bot shows a store selection: Magnum or Lamoda
+2. For Lamoda: You choose between Women's, Men's, or Kids' categories.
+3. Discount Selection: You choose a discount threshold (10%, 20%, 30%, 50%, or enter manually).
+4. The bot scrapes the selected store’s website, filters discounts, and sends results as a .txt file.
 
 ## 📜 Example Output
 ```
-Название: Чай "Пиала"
-Цена: 1,099 тг
-Старая цена: 1,659 тг
-Скидка: -34%
+🛍️ Бренд: adidas
+📌 Название: Футболка Future Icons 3-Stripes
+💰 Цена: 9 990 ₸
+💸 Старая цена: 26 990 ₸
+📉 Скидка: −62%
+⭐ Рейтинг: Нет
+📏 Размеры: 40/42, 44/46, 48/50, 52/54, 56/58
 
-Название: Макароны "Premium"
-Цена: 499 тг
-Старая цена: 789 тг
-Скидка: -37%
+🛍️ Бренд: Reebok
+📌 Название: Кроссовки GLIDE
+💰 Цена: 31 590 ₸
+💸 Старая цена: 45 100 ₸
+📉 Скидка: −29%
+⭐ Рейтинг: 4.6(513)
+📏 Размеры: 39, 40, 41, 42, 43, 44, 45
 ```
+## 🛒 Supported Stores
+- *Magnum* – Groceries, household items, beverages.
+- *Lamoda* – Fashion deals with category selection:
+   - 👗 Women's Clothing
+   - 👔 Men's Clothing
+   - 👶 Kids' Clothing
+
 
 ## 😂 Why Use This Bot?
 - Save money 💰 while sipping your tea ☕ with a smile 😁.
@@ -95,9 +110,11 @@ Built with ❤️ by **Ramazanm1nd3R**.
 
 ## 🚀 Future Plans
 - Add multi-language support (Kazakh 🇰🇿 and Russian 🇷🇺).
-- Explore new discount sources (we're watching you, other supermarkets 👀).
-- Automatically send deals based on your preferences.
+- Add more store options (e.g., Wildberries, Kaspi).
+- Schedule automatic discount alerts.
+- Implement search filters (brands, categories, price range).
+- Develop the application for Andioid/IOS
 
 ---
 
-### Let's save money and have fun while we're at it! 💸🎉
+**💸 Save money and shop smarter with Discount Hunter Bot! 🛍️**
